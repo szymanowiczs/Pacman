@@ -11,8 +11,6 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
-pygame.init()
-
 # Set the width and height of the screen [width, height]
 width = 500
 height = 600
@@ -46,31 +44,27 @@ class Wall(pygame.sprite.Sprite):
         self.rect.x = corner_x
         self.rect.y = corner_y
 
-    # draws a wall
-    def draw(self):
-        pygame.draw.rect(screen, self.color, [self.rect.x, self.rect.y, self.width, self.height])
-
 
 # Define coins to collect
 class coin(pygame.sprite.Sprite):
     # initialses parameters of the coin
-    def __init__(self, center_x, center_y, radius, color):
+    def __init__(self, corner_x, corner_y, width, height, color):
+
         super().__init__()
-
-        self.image = pygame.Surface([width, height])
-        self.image.fill(WHITE)
-        self.image.set_colorkey(WHITE)
+        self.width = width
+        self.height = height
         self.color = color
-        self.radius = radius
+        # set the image of the coin
+        self.image = pygame.Surface([width, height])
+        self.image.fill(color)
+        self.rect = self.image.get_rect()  # finds the rectangle object that has the dimensions of the image
+        self.rect.x = corner_x
+        self.rect.y = corner_y
 
-        pygame.draw.circle(self.image, self.color, (center_x, center_y), self.radius, 0)
 
-        self.rect = self.image.get_rect()
-        self.rect.x = center_x
-        self.rect.y = center_y
 
     def draw(self):
-        pygame.draw.circle(self.image, self.color, (center_x, center_y), self.radius, 0)
+        pygame.draw.circle(self.image, self.color, (self.rect.x, self.rect.y), self.radius, 0)
 
 
 # this is the list of all walls in the game
@@ -83,10 +77,11 @@ widthofwalls = 20
 heightofwalls = 20
 colorofwalls = RED
 colorofcoins = BLUE
-
+heightofcoins = 4
+widthofcoins = 4
 
 # Function for adding the map from a given string
-def adding_map(mapdescription, heightofwalls, widthofwalls, colorofwalls):
+def adding_map(mapdescription, heightofwalls, widthofwalls, colorofwalls, colorofcoins):
     # For each row, starting from 0
     current_row = 0
     for each_string in mapdescription:
@@ -99,37 +94,38 @@ def adding_map(mapdescription, heightofwalls, widthofwalls, colorofwalls):
                 all_sprites_list.add(newWall)
             # A . means a coin
             elif each_string[i] == ".":
-                newCoin = coin(i * widthofwalls, current_row * heightofwalls, int(widthofwalls / 4), colorofcoins)
+                newCoin = coin((i * widthofwalls+(widthofwalls-widthofcoins)/2), (current_row * heightofwalls+(heightofwalls-heightofcoins)/2), widthofcoins, heightofcoins, colorofcoins)
                 coin_list.add(newCoin)
                 all_sprites_list.add(newCoin)
         current_row += 1
 
-        # Declaration of the maze
+# Declaration of the maze
 
 
 basicmap = ["WWWWWWWWWWWWWWWWWWWWWWWWW",
-            "W    .      W           W",
-            "W WWW WWWWW W WWWWW WWW W",
-            "W WWW WWWWW W WWWWW WWW W",
-            "W.........              W",
-            "W WWW W WWWWWWWWW W WWW W",
-            "W     W     W     W     W",
-            "WWWWW WWWWW W WWWWW WWWWW",
-            "    W W           W W    ",
-            "WWWWW W WWWWWWWWW W WWWWW",
-            "        W       W        ",
-            "WWWWW W WWWWWWWWW W WWWWW",
-            "    W W           W W    ",
-            "WWWWW W WWWWWWWWW W WWWWW",
-            "W           W           W",
-            "W WWW WWWWW W WWWWW WWW W",
-            "W   W               W   W",
-            "WWW W W WWWWWWWWW W W WWW",
-            "W     W     W     W     W",
-            "W WWWWWWWWW W WWWWWWWWW W",
-            "W                       W",
+            "W...........W...........W",
+            "W.WWW.WWWWW.W.WWWWW.WWW.W",
+            "W.WWW.WWWWW.W.WWWWW.WWW.W",
+            "W.......................W",
+            "W.WWW.W.WWWWWWWWW.W.WWW.W",
+            "W.....W.....W.....W.....W",
+            "WWWWW.WWWWW.W.WWWWW.WWWWW",
+            "    W.W...........W.W    ",
+            "WWWWW.W.WWWWWWWWW.W.WWWWW",
+            "........W       W........",
+            "WWWWW.W.WWWWWWWWW.W.WWWWW",
+            "    W.W...........W.W    ",
+            "WWWWW.W.WWWWWWWWW.W.WWWWW",
+            "W...........W...........W",
+            "W.WWW.WWWWW.W.WWWWW.WWW.W",
+            "W...W...............W...W",
+            "WWW.W.W.WWWWWWWWW.W.W.WWW",
+            "W.....W.....W.....W.....W",
+            "W.WWWWWWWWW.W.WWWWWWWWW.W",
+            "W.......................W",
             "WWWWWWWWWWWWWWWWWWWWWWWWW"]
-adding_map(basicmap, heightofwalls, widthofwalls, colorofwalls)
+
+adding_map(basicmap, heightofwalls, widthofwalls, colorofwalls, colorofcoins)
 
 
 # Define moving object
@@ -224,6 +220,7 @@ class moving_object(pygame.sprite.Sprite):
             newdirection = 4
             self.new_direction(newdirection)
 
+    # This function checks if Pacman would collide with a wall if it moved
     def wouldcollide(self, wall_list):
         self.move()
         if pygame.sprite.spritecollide(self, wall_list, False):
@@ -231,6 +228,12 @@ class moving_object(pygame.sprite.Sprite):
         else:
             return False
 
+    # This function checks whether Pacman collects a coin
+    def collectcoin(self, coin_list):
+        if pygame.sprite.spritecollide(self, coin_list, True):
+            return True
+        else:
+            return False
 
 initxPac = 20
 inityPac = 20
@@ -239,11 +242,25 @@ initdirectionPac = 2
 heightPac = 20
 widthPac = 20
 colorPac = BLACK
+pointspercoin = 1
+score = 0
 
 Pacman = moving_object(initspeedPac, initdirectionPac, widthPac, heightPac, colorPac)
 Pacman.rect.x = initxPac
 Pacman.rect.y = inityPac
 
+# This function checks if the coin is collected and increments score
+def scorecounter(score, coin_list, Pacman, pointspercoin, all_sprites_list):
+    if Pacman.collectcoin(coin_list):
+        # Increments score
+        score += pointspercoin
+        # Delete the coin from the coin_list
+        pygame.sprite.spritecollide(Pacman, coin_list, True)
+        # Delete the coin from the list of all sprites so that it is not displayed
+        pygame.sprite.spritecollide(Pacman, all_sprites_list, True)
+        # Add Pacman to ensure it is displayed
+        all_sprites_list.add(Pacman)
+    return score
 
 # Will be used for implementing changing direction as it is in original Pacman
 def createacopyofPacman(Pacman):
@@ -282,8 +299,6 @@ while not done:
     if currentdirection != newdirection:
         # Then uses the example of Pacman to verify if turn possible
         Pacmanexampleforcollisions.new_direction(newdirection)
-        # Moves this example
-        Pacmanexampleforcollisions.move()
         # And checks if there would be a collision
         if Pacmanexampleforcollisions.wouldcollide(wall_list):
             # If so, moves Pacman as if there was nothing from the user
@@ -300,6 +315,10 @@ while not done:
     # If there is no signal from the user, just moves the Pacman preventing collisions
     else:
         Pacman.moving_object_detecting_collisions(wall_list)
+
+    # Update score and make the coin disappear
+    score = scorecounter(score, coin_list, Pacman, pointspercoin, all_sprites_list)
+    
     # screen cleared to white
     screen.fill(WHITE)
 
