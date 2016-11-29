@@ -62,11 +62,6 @@ class coin(pygame.sprite.Sprite):
         self.rect.y = corner_y
 
 
-
-    def draw(self):
-        pygame.draw.circle(self.image, self.color, (self.rect.x, self.rect.y), self.radius, 0)
-
-
 # this is the list of all walls in the game
 wall_list = pygame.sprite.Group()
 # this is the list of all coins in the game
@@ -234,6 +229,14 @@ class moving_object(pygame.sprite.Sprite):
             return True
         else:
             return False
+    # Pacman can teleport through the tunnel
+    def tunnel(self, widthofscreen):
+        # If it is on the right hand-side, it appears on the left hand-side
+        if self.rect.x > widthofscreen:
+            self.rect.x = 0 - self.width
+        # If it is on the left side, it appears on the right side
+        if self.rect.x < 0 - self.width:
+            self.rect.x = widthofscreen
 
 initxPac = 20
 inityPac = 20
@@ -316,9 +319,12 @@ while not done:
     else:
         Pacman.moving_object_detecting_collisions(wall_list)
 
+    # Pacman can teleport to the other side
+    Pacman.tunnel(width)
+
     # Update score and make the coin disappear
     score = scorecounter(score, coin_list, Pacman, pointspercoin, all_sprites_list)
-    
+
     # screen cleared to white
     screen.fill(WHITE)
 
